@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="آرش لولی">
+<meta name="theme-color" content="#c27a3a">
+<title>آرشِ لولی — سفر عشق و صحرا</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"آرش لولی","short_name":"آرش لولی","start_url":".","display":"standalone","background_color":"%231a0f08","theme_color":"%23c27a3a","orientation":"landscape","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 192 192%27%3E%3Crect width=%27192%27 height=%27192%27 fill=%27%23c27a3a%27/%3E%3Ctext x=%2796%27 y=%27130%27 font-size=%27120%27 text-anchor=%27middle%27%3E%F0%9F%90%AA%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"}]}'>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#1a0f08;
+font-family:-apple-system,"Vazirmatn",system-ui,sans-serif;
+color:#fff;touch-action:none;-webkit-user-select:none;user-select:none;direction:rtl}
+canvas{display:block;position:fixed;inset:0}
+#hud{position:fixed;top:calc(8px + env(safe-area-inset-top));right:8px;left:8px;
+display:flex;gap:6px;justify-content:space-between;z-index:15;
+pointer-events:none;flex-wrap:wrap}
+.bar{background:rgba(20,10,5,.65);border-radius:12px;padding:6px 10px;
+font-size:12px;backdrop-filter:blur(8px);display:flex;align-items:center;
+gap:6px;min-width:90px;border:1px solid rgba(255,200,120,.18)}
+.bar .fill{height:7px;border-radius:4px;flex:1;min-width:30px;
+background:linear-gradient(90deg,#4fc3f7,#0288d1);transition:width .25s}
+.bar.warn .fill{background:linear-gradient(90deg,#ffb74d,#ef6c00)}
+.bar.danger .fill{background:linear-gradient(90deg,#ff5252,#b71c1c)}
+#phaseBox{position:fixed;top:calc(54px + env(safe-area-inset-top));left:50%;
+transform:translateX(-50%);z-index:15;pointer-events:none;
+background:rgba(20,10,5,.6);border-radius:10px;padding:5px 12px;
+font-size:12px;backdrop-filter:blur(6px);border:1px solid rgba(255,200,120,.2)}
+#phaseBox .clock{color:#ffd18a;font-weight:bold}
+#dialog{position:fixed;top:calc(96px + env(safe-area-inset-top));left:12px;right:12px;
+z-index:16;pointer-events:none;background:rgba(15,8,3,.88);
+border:1px solid rgba(255,200,120,.3);border-radius:14px;padding:10px 14px;
+font-size:13px;line-height:1.85;backdrop-filter:blur(10px);max-width:520px;
+margin:0 auto;transform:translateY(-16px);opacity:0;transition:all .35s}
+#dialog.show{transform:translateY(0);opacity:1}
+#dialog .speaker{color:#ffcb6b;font-weight:bold;font-size:12px;margin-bottom:3px}
+#dialog .text{color:#f5ead5}
+#alert{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+font-size:60px;z-index:25;pointer-events:none;opacity:0;transition:opacity .2s;
+filter:drop-shadow(0 0 24px #f44336)}
+#alert.show{opacity:1;animation:pulse .45s infinite alternate}
+@keyframes pulse{from{transform:translate(-50%,-50%) scale(1)}
+to{transform:translate(-50%,-50%) scale(1.15)}}
+#stick{position:fixed;right:calc(20px + env(safe-area-inset-right));
+bottom:calc(20px + env(safe-area-inset-bottom));width:115px;height:115px;
+border-radius:50%;background:radial-gradient(circle,rgba(255,200,120,.15),rgba(255,200,120,.05));
+border:2px solid rgba(255,200,120,.35);z-index:20;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+#knob{position:absolute;left:34.5px;top:34.5px;width:46px;height:46px;
+border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,#ffd9a0);
+pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+#tapHint{position:fixed;bottom:calc(160px + env(safe-area-inset-bottom));
+left:50%;transform:translateX(-50%);z-index:14;background:rgba(255,193,7,.92);
+color:#2a1200;padding:6px 16px;border-radius:18px;font-size:12px;font-weight:bold;
+opacity:0;transition:opacity .3s;pointer-events:none}
+#tapHint.show{opacity:1}
+.screen{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;
+align-items:center;justify-content:center;padding:20px;text-align:center;overflow-y:auto;
+background:linear-gradient(180deg,#1a0f08 0%,#3a1f0a 50%,#1a0f08 100%)}
+.screen.hide{display:none}
+.screen h1{font-size:26px;color:#ffcb6b;margin-bottom:10px;
+text-shadow:0 2px 20px rgba(255,180,80,.35)}
+.screen h2{font-size:19px;color:#ffd9a0;margin-bottom:14px}
+.screen p{font-size:14px;line-height:1.9;color:#e8d4b0;max-width:440px;margin-bottom:6px}
+.screen .sub{font-size:12px;color:#a88860;margin-top:4px}
+.btn{margin-top:16px;background:linear-gradient(180deg,#ffb74d,#e08b1e);
+color:#2a1200;border:0;border-radius:14px;padding:13px 36px;font-size:16px;
+font-weight:bold;font-family:inherit;cursor:pointer;
+box-shadow:0 6px 22px rgba(224,139,30,.45)}
+.btn:active{transform:scale(.97)}
+.btn.sec{background:linear-gradient(180deg,#5a4030,#3a2418);color:#ffd9a0;
+box-shadow:none;margin-top:8px;padding:10px 24px;font-size:14px}
+#briefing .card{background:rgba(15,8,3,.7);border:1px solid rgba(255,200,120,.28);
+border-radius:18px;padding:18px;max-width:440px;width:100%;margin-top:8px}
+#briefing .row{display:flex;justify-content:space-between;padding:7px 0;
+border-bottom:1px dashed rgba(255,200,120,.15);font-size:13px}
+#briefing .row:last-child{border:0}
+#briefing .row .k{color:#a88860}
+#briefing .row .v{color:#ffd9a0;font-weight:bold}
+#briefing .missions{margin-top:10px;text-align:right}
+#briefing .missions .m{padding:5px 0;font-size:12px;color:#e8d4b0}
+#winScreen .rewards{background:rgba(15,8,3,.6);border:1px solid rgba(255,200,120,.3);
+border-radius:14px;padding:14px 20px;margin:12px 0;min-width:240px}
+#winScreen .rewards .r{display:flex;justify-content:space-between;padding:5px 0;font-size:14px}
+#winScreen .rewards .r .k{color:#a88860}
+#winScreen .rewards .r .v{color:#ffcb6b;font-weight:bold}
+#shop .items{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+gap:8px;max-width:500px;width:100%;margin-top:12px}
+#shop .item{background:rgba(15,8,3,.7);border:1px solid rgba(255,200,120,.25);
+border-radius:12px;padding:12px;font-size:12px;cursor:pointer;
+transition:all .2s;text-align:right}
+#shop .item:active{transform:scale(.97)}
+#shop .item .name{color:#ffcb6b;font-weight:bold;font-size:13px;margin-bottom:5px}
+#shop .item .desc{color:#a88860;font-size:11px;line-height:1.6}
+#shop .item .price{color:#ffd9a0;margin-top:6px;font-weight:bold}
+#shop .item.owned{opacity:.4;border-color:#4caf50}
+#shop .coins{background:rgba(255,183,77,.15);border:1px solid rgba(255,183,77,.4);
+padding:8px 18px;border-radius:12px;font-size:15px;color:#ffcb6b;
+font-weight:bold;margin-top:6px}
+#love{position:fixed;bottom:calc(160px + env(safe-area-inset-bottom));
+left:50%;transform:translateX(-50%);z-index:14;color:#ff9bc7;
+font-size:22px;opacity:0;pointer-events:none;transition:opacity .4s;
+text-shadow:0 0 20px #ff4d94}
+#love.show{opacity:1;animation:float 1.4s ease-out}
+@keyframes float{0%{transform:translate(-50%,0)}100%{transform:translate(-50%,-40px)}}
+</style>
+</head>
+<body>
+
+<div id="hud">
+<div class="bar" id="waterBar">💧<div class="fill" style="width:100%"></div></div>
+<div class="bar" id="foodBar">🍞<div class="fill" style="width:100%"></div></div>
+<div class="bar" id="coinBar">🪙<span id="coinVal">0</span></div>
+<div class="bar danger" id="warnBar" style="display:none">❗<div class="fill" style="width:0%"></div></div>
+</div>
+<div id="phaseBox"><span class="clock" id="clock">۶:۰۰</span> — <span id="phaseName">🌅 صبح</span></div>
+<div id="dialog"><div class="speaker" id="speaker">—</div><div class="text" id="dialogText"></div></div>
+<div id="alert">❗</div>
+<div id="tapHint">👆 روی نشانه لمس کن</div>
+<div id="love">💕</div>
+<div id="stick"><div id="knob"></div></div>
+
+<div class="screen" id="startScreen">
+<h1>🏜️ آرشِ لولی</h1>
+<h2 style="font-size:15px;color:#ffb74d;margin-bottom:20px">سفر عشق و صحرا</h2>
+<p>تو <b>آرش</b> هستی، جوانی از طایفه‌ی لولی‌های خراسان.</p>
+<p>سفری از دشت نیشابور تا قلب کویر لوت در انتظار توست...</p>
+<p class="sub">۲۰ لول — از کاروان گندم تا کاروان سلطنتی</p>
+<button class="btn" id="startBtn">شروع سفر</button>
+<button class="btn sec" id="continueBtn" style="display:none">ادامه‌ی سفر</button>
+<button class="btn sec" id="resetBtn" style="display:none">شروع دوباره</button>
+</div>
+
+<div class="screen hide" id="briefing">
+<h2 id="briefTitle">لول ۱</h2>
+<div class="card">
+<div class="row"><span class="k">📍 از</span><span class="v" id="bFrom">—</span></div>
+<div class="row"><span class="k">🏁 به</span><span class="v" id="bTo">—</span></div>
+<div class="row"><span class="k">📏 مسافت</span><span class="v" id="bDist">—</span></div>
+<div class="row"><span class="k">⏱️ زمان</span><span class="v" id="bTime">—</span></div>
+<div class="row"><span class="k">🐪 کاروان</span><span class="v" id="bCara">—</span></div>
+<div class="row"><span class="k">👤 رئیس</span><span class="v" id="bLeader">—</span></div>
+<div class="row"><span class="k">📦 بار</span><span class="v" id="bCargo">—</span></div>
+<div class="row"><span class="k">💰 دستمزد</span><span class="v" id="bPay">—</span></div>
+<div class="row"><span class="k">⚠️ خطر</span><span class="v" id="bRisk">—</span></div>
+<div class="missions" id="bMissions"></div>
+</div>
+<button class="btn" id="startLevelBtn">حرکت در سپیده‌دم</button>
+</div>
+
+<div class="screen hide" id="winScreen">
+<h1>🏆 به سلامت رسیدید!</h1>
+<h2 id="winSub" style="font-size:14px;color:#ffb74d">—</h2>
+<div class="rewards" id="rewardList"></div>
+<button class="btn" id="nextLevelBtn">لول بعدی</button>
+<button class="btn sec" id="toShopBtn">🛒 فروشگاه</button>
+</div>
+
+<div class="screen hide" id="shop">
+<h2>🛒 بازار کاروانسرا</h2>
+<div class="coins" id="shopCoins">🪙 ۰ سکه</div>
+<div class="items" id="shopItems"></div>
+<button class="btn" id="closeShopBtn">بازگشت به سفر</button>
+</div>
+
+<div class="screen hide" id="loseScreen">
+<h1>💀 کاروان از دست رفت</h1>
+<p id="loseMsg">—</p>
+<p class="sub">جریمه‌ی کوچکی پرداخت شد. دوباره تلاش کن.</p>
+<button class="btn" id="retryBtn">تلاش دوباره</button>
+</div>
+
+<div class="screen hide" id="finalScreen">
+<h1>👑 پیروزی افسانه‌ای</h1>
+<h2 style="color:#ffb74d">سیاه‌کوه شکست خورد</h2>
+<p>آرش و رودابه دست در دست هم، در نیشابور کاروانسرایی ساختند.</p>
+<p>نام آرشِ لولی، تا همیشه در تاریخ صحرا ماند.</p>
+<p class="sub">🎉 پایان سفر</p>
+<button class="btn" id="finalRestart">شروع دوباره</button>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ================================================================
+   داده‌ها — ۲۰ لول کامل
+   ================================================================ */
+const LEVELS = [
+{id:1,from:'نیشابور',to:'رباط ماهی',dist:28,hours:8,theme:'golden',risk:'⭐',
+caravan:'کاروان حاجی رحیم',leader:'حاجی رحیم',cargo:'گندم و جو',size:'۳ نفر + ۱ شتر',pay:50,
+bandits:[{type:'hole',name:'دزدک',x:6,z:10}],
+dial:[{s:'حاجی رحیم',t:'آرش جان، امروز باید به رباط ماهی برسیم. آب کم است.',at:0},
+{s:'آرش',t:'نگران نباش حاجی. این راه را صد بار رفته‌ام.',at:2},
+{s:'حاجی رحیم',t:'می‌دانم پسرم. برای همین تو را انتخاب کردم.',at:5}],
+win:{s:'حاجی رحیم',t:'دستت درد نکند آرش. باشد که راهنمای بزرگ صحرا شوی.'}},
+
+{id:2,from:'رباط ماهی',to:'دهکده جوین',dist:32,hours:9,theme:'golden',risk:'⭐',
+caravan:'کاروان برادران توسی',leader:'ابوطالب توسی',cargo:'خرما و انجیر',size:'۳ نفر + ۲ شتر',pay:55,
+bandits:[{type:'hole',name:'دزدک',x:-8,z:12},{type:'underground',name:'موری',x:10,z:-5}],
+dial:[{s:'ابوطالب توسی',t:'شنیدم راهزن‌ها این طرف‌ها زیاد شده‌اند. حواست باشد.',at:0},
+{s:'آرش',t:'راهزن‌ها همه‌جا هستند. فقط باید بدانی کجا را نگاه کنی.',at:3}],
+win:{s:'ابوطالب توسی',t:'خوب راهنمایی کردی جوان. این هم مزدت.'}},
+
+{id:3,from:'دهکده جوین',to:'رباط شرف',dist:35,hours:10,theme:'golden',risk:'⭐⭐',
+caravan:'کاروان نمک نیشابور',leader:'زینب خاتون',cargo:'نمک',size:'۴ نفر + ۲ شتر',pay:60,
+bandits:[{type:'behindRock',name:'سنگی',x:12,z:-10},{type:'hole',name:'دزدک',x:-12,z:8}],
+dial:[{s:'زینب خاتون',t:'من زنم و کاروانی. این سفر برایم مهم است. کمکم کن سالم برسیم.',at:0},
+{s:'آرش',t:'بانو، تا رباط شرف، جانم سپر راهتان است.',at:3}],
+win:{s:'زینب خاتون',t:'دستت طلا، آرش لولی. حالا می‌دانم چرا همه تو را می‌خواهند.'}},
+
+{id:4,from:'رباط شرف',to:'دامغان',dist:40,hours:11,theme:'golden',risk:'⭐⭐',
+caravan:'کاروان پشمی‌ها',leader:'عمو رحمان',cargo:'پشم و کرک',size:'۴ نفر + ۲ شتر',pay:70,
+bandits:[{type:'hole',name:'دزدک',x:8,z:12},{type:'behindRock',name:'سنگی',x:-10,z:-8},{type:'reed',name:'نی‌نی',x:14,z:2}],
+dial:[{s:'عمو رحمان',t:'آرش جان، من پیری هستم و چشمم خوب نمی‌بیند. به تو تکیه کرده‌ام.',at:0},
+{s:'آرش',t:'عمو، چشمان من چشمان توست. مسیر را می‌بینم.',at:3}],
+win:{s:'عمو رحمان',t:'خدا خیرت بده جوان. پشم‌های خوبی به شهر رساندی.'}},
+
+{id:5,from:'دامغان',to:'کویر خوار',dist:45,hours:12,theme:'sunset',risk:'⭐⭐',
+caravan:'کاروان چرم دامغان',leader:'استاد کاظم',cargo:'چرم',size:'۴ نفر + ۳ شتر',pay:80,
+bandits:[{type:'underground',name:'موری',x:6,z:-10},{type:'reed',name:'نی‌نی',x:-8,z:10},{type:'behindRock',name:'سنگی',x:12,z:8}],
+dial:[{s:'استاد کاظم',t:'چرم‌ها را نباید خیس شوند. شب ممکن است باران ببارد.',at:0},
+{s:'آرش',t:'باران؟ در کویر؟ نگران نباش استاد. آب را می‌یابم.',at:3}],
+win:{s:'استاد کاظم',t:'چرم سالم به بارانداز رسید. مردی قابل اعتماد هستی.'}},
+
+{id:6,from:'کویر خوار',to:'ری',dist:50,hours:13,theme:'sunset',risk:'⭐⭐',
+caravan:'کاروان ابریشم ری',leader:'تاجر سیفی',cargo:'پارچه ابریشم',size:'۵ نفر + ۳ شتر',pay:100,
+bandits:[{type:'reed',name:'نی‌نی',x:8,z:12},{type:'waterskin',name:'مشکی',x:-12,z:-6},{type:'behindRock',name:'سنگی',x:15,z:-12}],
+dial:[{s:'تاجر سیفی',t:'ابریشم‌های من از چین آمده. اگر به ری برسانیم، ثروتمند می‌شوم.',at:0},
+{s:'آرش',t:'راه ری را می‌شناسم. آسوده باش.',at:3}],
+win:{s:'تاجر سیفی',t:'اینجا سهم توست، آرش. تو جوانی با آینده‌ای روشن.'}},
+
+{id:7,from:'ری',to:'قزوین',dist:55,hours:14,theme:'sunset',risk:'⭐⭐⭐',
+caravan:'کاروان ادویه قزوین',leader:'بانو شهرزاد',cargo:'ادویه و زعفران',size:'۵ نفر + ۴ شتر',pay:120,
+bandits:[{type:'palm',name:'نخلی',x:10,z:-12},{type:'underground',name:'موری',x:-10,z:14},{type:'waterskin',name:'مشکی',x:14,z:8},{type:'hole',name:'دزدک',x:-14,z:-10}],
+dial:[{s:'بانو شهرزاد',t:'من بیوه‌ام و خودم کاروانم را می‌برم. تحقیرم نکن.',at:0},
+{s:'آرش',t:'بانو، زنانی که کاروان می‌برند، شجاع‌تر از صد مردند.',at:3}],
+win:{s:'بانو شهرزاد',t:'از تو خوشم آمد، لولی. اگر روزی خواستی، کاروان من مال توست.'}},
+
+{id:8,from:'قزوین',to:'کویر مرکزی',dist:60,hours:15,theme:'sunset',risk:'⭐⭐⭐',
+caravan:'کاروان زعفران',leader:'خواجه نظام',cargo:'زعفران و ادویه',size:'۶ نفر + ۵ شتر',pay:140,
+bandits:[{type:'behindRock',name:'سنگی',x:12,z:-12},{type:'underground',name:'موری',x:-12,z:10},{type:'reed',name:'نی‌نی',x:14,z:14},{type:'hole',name:'دزدک',x:-8,z:-14}],
+romance:true,
+dial:[{s:'خواجه نظام',t:'آرش، این کاروان مال من است. دخترم هم همراهم است. حواست باشد.',at:0},
+{s:'رودابه',t:'تو همان لولی هستی که می‌گویند راه‌ها را مثل کف دستش می‌شناسد؟',at:4},
+{s:'آرش',t:'راه‌ها را می‌شناسم... ولی این‌طور که تو نگاه می‌کنی، انگار خودم را هم نمی‌شناسم.',at:7},
+{s:'رودابه',t:'جواب خوبی دادی. ببینم در صحرا هم همین‌قدر زبان‌باز هستی؟',at:11}],
+win:{s:'رودابه',t:'آرش... امیدوارم دوباره ببینمت. سفر با تو کوتاه بود.'}},
+
+{id:9,from:'کویر مرکزی',to:'طبس',dist:65,hours:16,theme:'red',risk:'⭐⭐⭐',
+caravan:'کاروان پسته‌ها',leader:'برادران کرمانی',cargo:'پسته و بادام',size:'۶ نفر + ۵ شتر',pay:160,
+bandits:[{type:'camo',name:'شن‌رو',x:10,z:12},{type:'reed',name:'نی‌نی',x:-10,z:-14},{type:'eyes',name:'چشمی',x:16,z:6},{type:'hole',name:'دزدک',x:-14,z:12}],
+romance:true,
+dial:[{s:'رودابه',t:'آرش... من مریضم. اگر بمیرم، تو را تنها می‌گذارم.',at:0},
+{s:'آرش',t:'در صحرا هیچ‌کس نمی‌میرد مگر اینکه راهنما اشتباه کند. من اشتباه نمی‌کنم.',at:4},
+{s:'رودابه',t:'به تو اعتماد دارم. به کسی که تازه می‌شناسم...',at:9}],
+win:{s:'رودابه',t:'زنده ماندم. تو واقعاً افسانه‌ای هستی، آرش.'}},
+
+{id:10,from:'طبس',to:'کرمان',dist:70,hours:17,theme:'red',risk:'⭐⭐⭐',
+caravan:'کاروان سفال',leader:'استاد یعقوب',cargo:'ظروف سفالی',size:'۶ نفر + ۶ شتر',pay:180,
+bandits:[{type:'cave',name:'غاری',x:14,z:-10},{type:'camo',name:'شن‌رو',x:-12,z:12},{type:'eyes',name:'چشمی',x:10,z:16},{type:'behindRock',name:'سنگی',x:-16,z:-8},{type:'reed',name:'نی‌نی',x:8,z:-14}],
+romance:true,
+dial:[{s:'رودابه',t:'آرش! آن‌ها راهزن‌ها هستند!',at:0},
+{s:'آرش',t:'پشت من بمان. تکان نخور.',at:2},
+{s:'رودابه',t:'چطور این‌کار را کردی؟ تو... تو از مرگ هم نمی‌ترسی!',at:6},
+{s:'آرش',t:'می‌ترسم. ولی وقتی تو اینجایی، ترسم را فراموش می‌کنم.',at:10}],
+win:{s:'رودابه',t:'از تو ممنونم. برای همه چیز.'}},
+
+{id:11,from:'کرمان',to:'جیرفت',dist:75,hours:18,theme:'red',risk:'⭐⭐⭐⭐',
+caravan:'کاروان کتاب',leader:'دانشمند ابوریحان',cargo:'کتاب و نسخه خطی',size:'۷ نفر + ۵ شتر',pay:200,
+bandits:[{type:'mirage',name:'سرابی',x:12,z:14},{type:'palm',name:'نخلی',x:-14,z:-10},{type:'camo',name:'شن‌رو',x:16,z:-6},{type:'cave',name:'غاری',x:-10,z:16},{type:'hole',name:'دزدک',x:18,z:8}],
+romance:true,
+dial:[{s:'رودابه',t:'پدرم می‌گوید لولی‌ها قابل اعتماد نیستند. ولی من... به تو اعتماد دارم.',at:0},
+{s:'آرش',t:'اعتماد در صحرا خطرناک است. ولی اگر تو بگویی، من خطرش را قبول می‌کنم.',at:4},
+{s:'رودابه',t:'پس با من بیا. فقط ما دو تا. تا آخر صحرا.',at:9}],
+win:{s:'رودابه',t:'این کتاب‌ها را برایت می‌خوانم. شب‌های صحرا، داستان‌های عاشقانه می‌گویند.'}},
+
+{id:12,from:'جیرفت',to:'حاشیه لوت',dist:80,hours:19,theme:'red',risk:'⭐⭐⭐⭐',
+caravan:'کاروان فرش',leader:'بانو پریسا',cargo:'فرش نفیس',size:'۷ نفر + ۶ شتر',pay:250,
+bandits:[{type:'mirage',name:'سرابی',x:14,z:-10},{type:'eyes',name:'چشمی',x:-12,z:14},{type:'reed',name:'نی‌نی',x:16,z:12},{type:'underground',name:'موری',x:-16,z:-12},{type:'cave',name:'غاری',x:10,z:18},{type:'camo',name:'شن‌رو',x:-8,z:-16}],
+romance:true,
+dial:[{s:'آرش',t:'رودابه! رودابه! کجایی؟',at:0},
+{s:'رودابه',t:'آرش... اینجام... اینجا! طوفان مرا برد...',at:3},
+{s:'آرش',t:'دستت را بده. دیگر نمی‌گذارم از دستم بروی.',at:7},
+{s:'رودابه',t:'قسم می‌خورم. دیگر هیچ‌وقت جدا نمی‌شویم.',at:11}],
+win:{s:'رودابه',t:'از طوفان گذشتیم. با هم.'}},
+
+{id:13,from:'حاشیه لوت',to:'شهداد',dist:85,hours:20,theme:'purple',risk:'⭐⭐⭐⭐',
+caravan:'کاروان جواهرات',leader:'خواجه الماس',cargo:'جواهرات گران‌بها',size:'۸ نفر + ۶ شتر',pay:280,
+bandits:[{type:'multi',name:'دوقلوها',x:12,z:14},{type:'cave',name:'غاری',x:-14,z:-10},{type:'mirage',name:'سرابی',x:16,z:-12},{type:'camo',name:'شن‌رو',x:-12,z:12},{type:'eyes',name:'چشمی',x:18,z:6},{type:'palm',name:'نخلی',x:-10,z:-16}],
+romance:true,
+dial:[{s:'خواجه نظام',t:'تو یک لولی هستی. دختر من مال تو نیست. برو دنبال کارت.',at:0},
+{s:'آرش',t:'من پول نمی‌خواهم. فقط... فقط بگذارید یک بار دیگر ببینمش.',at:4},
+{s:'رودابه',t:'پدر! من او را دوست دارم!',at:8},
+{s:'خواجه نظام',t:'ساکت! اگر یک بار دیگر نزدیکش شوی، دستور می‌دهم تکه‌تکه‌اش کنند.',at:11}],
+win:{s:'آرش',t:'رودابه... من برمی‌گردم. قسم می‌خورم.'}},
+
+{id:14,from:'شهداد',to:'قلب لوت',dist:90,hours:21,theme:'purple',risk:'⭐⭐⭐⭐',
+caravan:'کاروان سکه',leader:'صراف یوسف',cargo:'سکه و مسکوکات',size:'۸ نفر + ۷ شتر',pay:320,
+bandits:[{type:'multi',name:'دوقلوها',x:14,z:-10},{type:'night',name:'شبی',x:-12,z:14},{type:'cave',name:'غاری',x:16,z:12},{type:'camo',name:'شن‌رو',x:-16,z:-12},{type:'mirage',name:'سرابی',x:10,z:18},{type:'eyes',name:'چشمی',x:-10,z:-16},{type:'reed',name:'نی‌نی',x:18,z:2}],
+romance:true,
+dial:[{s:'رودابه',t:'از خانه فرار کردم. گلشن کمکم کرد. حالا... حالا کجا برویم؟',at:0},
+{s:'آرش',t:'به جایی که هیچ‌کس نتواند پیدایمان کند. قلب صحرا.',at:4},
+{s:'رودابه',t:'می‌ترسم آرش. ولی با تو، از هیچ چیز نمی‌ترسم.',at:9}],
+win:{s:'رودابه',t:'دور از همه، زیر ستاره‌های صحرا. این بهترین شب عمرم است.'}},
+
+{id:15,from:'قلب لوت',to:'زاهدان',dist:95,hours:22,theme:'purple',risk:'⭐⭐⭐⭐⭐',
+caravan:'کاروان دیپلماتیک',leader:'سفیر ایران',cargo:'هدیه دیپلماتیک',size:'۹ نفر + ۷ شتر',pay:360,
+bandits:[{type:'multi',name:'دوقلوها',x:12,z:14},{type:'night',name:'شبی',x:-14,z:-12},{type:'cave',name:'غاری',x:16,z:-10},{type:'mirage',name:'سرابی',x:-12,z:16},{type:'camo',name:'شن‌رو',x:18,z:8},{type:'eyes',name:'چشمی',x:-10,z:-18},{type:'reed',name:'نی‌نی',x:14,z:18},{type:'palm',name:'نخلی',x:-18,z:4}],
+romance:true,
+dial:[{s:'آرش',t:'رودابه! نه!',at:0},
+{s:'رودابه',t:'آرش... کمکم کن...',at:2},
+{s:'آرش',t:'قسم می‌خورم پیدایت می‌کنم. حتی اگر تا آخر دنیا بروم.',at:5}],
+win:{s:'رودابه',t:'می‌دانستم می‌آیی. همیشه می‌دانستم.'}},
+
+{id:16,from:'زاهدان',to:'بم',dist:100,hours:23,theme:'purple',risk:'⭐⭐⭐⭐⭐',
+caravan:'کاروان باستانی',leader:'باستان‌شناس مهر',cargo:'آثار باستانی',size:'۹ نفر + ۸ شتر',pay:420,
+bandits:[{type:'multi',name:'دوقلوها',x:14,z:12},{type:'multi',name:'دوقلوها',x:-14,z:-12},{type:'cave',name:'غاری',x:16,z:-14},{type:'night',name:'شبی',x:-16,z:14},{type:'camo',name:'شن‌رو',x:18,z:10},{type:'mirage',name:'سرابی',x:-12,z:18},{type:'eyes',name:'چشمی',x:12,z:-18},{type:'reed',name:'نی‌نی',x:-18,z:-6}],
+romance:true,
+dial:[{s:'رودابه',t:'آرش! تو زخمی شدی!',at:0},
+{s:'آرش',t:'مهم نیست. مهم این است که تو سالمی.',at:3},
+{s:'رودابه',t:'اگر تو بمیری، من هم می‌میرم. قسم می‌خورم.',at:6},
+{s:'آرش',t:'نه. تو باید زندگی کنی. باید برای من زندگی کنی.',at:10}],
+win:{s:'رودابه',t:'زنده ماندی. حالا دیگر هیچ‌وقت نمی‌گذارم بروی.'}},
+
+{id:17,from:'بم',to:'خبیص',dist:105,hours:24,theme:'dark',risk:'⭐⭐⭐⭐⭐',
+caravan:'کاروان طلای سیاه',leader:'خواجه سیاه',cargo:'طلا و جواهر',size:'۱۰ نفر + ۸ شتر',pay:500,
+bandits:[{type:'night',name:'شبی',x:12,z:14},{type:'night',name:'شبی',x:-14,z:-12},{type:'multi',name:'دوقلوها',x:16,z:-14},{type:'cave',name:'غاری',x:-16,z:16},{type:'camo',name:'شن‌رو',x:18,z:8},{type:'mirage',name:'سرابی',x:-12,z:-18},{type:'eyes',name:'چشمی',x:14,z:18},{type:'reed',name:'نی‌نی',x:-18,z:-8},{type:'palm',name:'نخلی',x:10,z:-18}],
+romance:true,
+dial:[{s:'رودابه',t:'آرش... از وقتی تو را دیدم، دیگر هیچ‌چیز مثل قبل نیست.',at:0},
+{s:'آرش',t:'من یک لولی‌ام. هیچ‌چیز ندارم. نه خانه، نه پول، نه اسم.',at:5},
+{s:'رودابه',t:'تو من را داری. همین کافی است.',at:9},
+{s:'آرش',t:'پس... پس من هم تو را دارم. تا آخر دنیا.',at:12}],
+win:{s:'رودابه',t:'باران می‌بارد، آتش روشن است، و ما اینجاییم. کافی است.'}},
+
+{id:18,from:'خبیص',to:'نهبندان',dist:110,hours:25,theme:'dark',risk:'⭐⭐⭐⭐⭐⭐',
+caravan:'کاروان فرش سلطنتی',leader:'ملکه فرش',cargo:'فرش نفیس سلطنتی',size:'۱۰ نفر + ۹ شتر',pay:600,
+bandits:[{type:'multi',name:'دوقلوها',x:12,z:14},{type:'multi',name:'دوقلوها',x:-14,z:-12},{type:'night',name:'شبی',x:16,z:-14},{type:'cave',name:'غاری',x:-16,z:16},{type:'camo',name:'شن‌رو',x:18,z:8},{type:'mirage',name:'سرابی',x:-12,z:-18},{type:'eyes',name:'چشمی',x:14,z:18},{type:'reed',name:'نی‌نی',x:-18,z:-8},{type:'palm',name:'نخلی',x:10,z:-18},{type:'hole',name:'دزدک',x:-6,z:16}],
+romance:true,
+dial:[{s:'آرش',t:'مسیر ممنوعه... می‌دانم خطرناک است. ولی راه دیگری نیست.',at:0},
+{s:'رودابه',t:'هر جا بروی، من هم می‌آیم.',at:4},
+{s:'آرش',t:'حتی به قلب تاریکی؟',at:7},
+{s:'رودابه',t:'حتی به قلب تاریکی.',at:9}],
+win:{s:'رودابه',t:'از تاریکی گذشتیم. با هم.'}},
+
+{id:19,from:'نهبندان',to:'دره سیاه‌کوه',dist:120,hours:26,theme:'dark',risk:'⭐⭐⭐⭐⭐⭐⭐',
+caravan:'کاروان گنج',leader:'گنج‌یاب افسانه‌ای',cargo:'گنج افسانه‌ای',size:'۱۲ نفر + ۱۰ شتر',pay:800,
+bandits:[{type:'multi',name:'دوقلوها',x:12,z:14},{type:'multi',name:'دوقلوها',x:-14,z:-12},{type:'night',name:'شبی',x:16,z:-14},{type:'night',name:'شبی',x:-16,z:16},{type:'cave',name:'غاری',x:18,z:8},{type:'camo',name:'شن‌رو',x:-12,z:-18},{type:'mirage',name:'سرابی',x:14,z:18},{type:'eyes',name:'چشمی',x:-18,z:-8},{type:'reed',name:'نی‌نی',x:10,z:-18},{type:'palm',name:'نخلی',x:-6,z:16},{type:'hole',name:'دزدک',x:20,z:-4}],
+romance:true,
+dial:[{s:'آرش',t:'این طوفان... این دیگر طوفان نیست. این خشم صحراست.',at:0},
+{s:'رودابه',t:'آرش، من می‌ترسم!',at:4},
+{s:'آرش',t:'به من چنگ بزن. تا آخرین نفس، نمی‌گذارم آسیبی ببینی.',at:7}],
+win:{s:'رودابه',t:'از طوفان افسانه‌ای گذشتیم. هیچ‌چیز نمی‌تواند ما را از هم جدا کند.'}},
+
+{id:20,from:'دره سیاه‌کوه',to:'لانه سیاه‌کوه',dist:130,hours:27,theme:'dark',risk:'👑',
+caravan:'کاروان سلطنتی',leader:'شاهزاده ایران',cargo:'گنج سلطنتی',size:'۱۲ نفر + ۱۲ شتر + ۲ اسب',pay:1000,
+bandits:[{type:'multi',name:'دوقلوها',x:12,z:14},{type:'multi',name:'دوقلوها',x:-14,z:-12},{type:'night',name:'شبی',x:16,z:-14},{type:'night',name:'شبی',x:-16,z:16},{type:'cave',name:'غاری',x:18,z:8},{type:'camo',name:'شن‌رو',x:-12,z:-18},{type:'mirage',name:'سرابی',x:14,z:18},{type:'eyes',name:'چشمی',x:-18,z:-8},{type:'reed',name:'نی‌نی',x:10,z:-18},{type:'palm',name:'نخلی',x:-6,z:16},{type:'boss',name:'سیاه‌کوه',x:0,z:22}],
+romance:true,final:true,
+dial:[{s:'سیاه‌کوه',t:'آه، آرشِ لولی. شنیده‌ام نامت را. دختره را می‌خواهی؟ باید از هفت خان من رد شوی.',at:0},
+{s:'آرش',t:'من آرشِ لولی‌ام. از هفت خان گذشتم، از هفت دریا گذشتم. تو هم فقط یک راهزنی.',at:4},
+{s:'رودابه',t:'آرش! مواظب باش!',at:8},
+{s:'آرش',t:'رودابه، چشمانت را ببند. من برمی‌گردم.',at:11}],
+win:{s:'شاهزاده ایران',t:'آرشِ لولی، تو افسانه‌ای شدی. از این پس، نامت در تاریخ صحرا می‌ماند.'}}
+];
+
+const SHOP = [
+{id:'water',  name:'مشک آب اضافه',  price:80,   desc:'ظرفیت آب +۳۰٪'},
+{id:'food',   name:'کیسه‌ی غذا',    price:120,  desc:'غذای کاروان دیرتر تمام می‌شود'},
+{id:'compass',name:'قطب‌نمای قدیمی',price:200,  desc:'مسیر کوتاه‌تر'},
+{id:'eye',    name:'چشم صحرا',       price:250,  desc:'نشانه‌ی راهزن‌ها را از دور می‌بینی'},
+{id:'lantern',name:'فانوس جادویی',   price:300,  desc:'دید در شب'},
+{id:'spear',  name:'نیزه‌ی راهزنان', price:400,  desc:'یک بار دفع راهزن'},
+{id:'song',   name:'آواز لولی',       price:600,  desc:'راهزن‌ها از دور فرار می‌کنند'},
+{id:'friend', name:'رفاقت کاروان',   price:1000, desc:'کاروانی‌ها خودشان دفاع می‌کنند'},
+{id:'stone',  name:'سنگ جادویی',     price:2000, desc:'یک بار نجات کاروان'}
+];
+
+const THEMES = {
+  golden:{sky:0xf0b878,ground:0xe4b478,fog:0xf0b878,sun:0xffd88a},
+  sunset:{sky:0xe8884a,ground:0xd09858,fog:0xe8884a,sun:0xffb870},
+  red:{sky:0xc14a2a,ground:0xb07048,fog:0xc14a2a,sun:0xff8060},
+  purple:{sky:0x3a2a5a,ground:0x6a4870,fog:0x3a2a5a,sun:0x9080b0},
+  dark:{sky:0x1a1020,ground:0x3a2838,fog:0x1a1020,sun:0x504060}
+};
+
+/* ================================================================
+   ذخیره‌ی پیشرفت
+   ================================================================ */
+const SK='arash_loli_save_v2';
+let save = (()=>{try{return JSON.parse(localStorage.getItem(SK))||{coins:0,level:1,owned:[],bestLevel:1}}catch(e){return{coins:0,level:1,owned:[],bestLevel:1}}})();
+function saveGame(){try{localStorage.setItem(SK,JSON.stringify(save))}catch(e){}}
+
+/* ================================================================
+   وضعیت
+   ================================================================ */
+const state = {
+  playing:false, lv:null, water:100, waterMax:100, food:100,
+  elapsed:0, banditHit:false, banditFound:new Set(), banditTimers:new Map(),
+  wellUsed:false, won:false, lost:false, dialogIdx:0, loveShown:false
+};
+
+/* ================================================================
+   Three.js
+   ================================================================ */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 400);
+const renderer = new THREE.WebGLRenderer({antialias:true, powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const hemi = new THREE.HemisphereLight(0xffe8c0, 0xb07040, 1.1); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffdca0, 2.0);
+sun.position.set(-18,26,-12); sun.castShadow = true;
+sun.shadow.mapSize.set(1024,1024);
+const sc = sun.shadow.camera;
+sc.left=-45;sc.right=45;sc.top=45;sc.bottom=-45;sc.far=100;
+scene.add(sun);
+
+let groundMesh, sunDisc;
+
+function buildWorld(theme){
+  // پاک کردن
+  if(groundMesh){scene.remove(groundMesh);groundMesh.geometry.dispose()}
+  scene.children.filter(c=>c.userData.rock).forEach(c=>scene.remove(c));
+  if(sunDisc) scene.remove(sunDisc);
+
+  const t = THEMES[theme] || THEMES.golden;
+  scene.background = new THREE.Color(t.sky);
+  scene.fog = new THREE.Fog(t.sky, 35, 95);
+  sunDisc = new THREE.Mesh(new THREE.SphereGeometry(3.5,16,16),
+    new THREE.MeshBasicMaterial({color:t.sun}));
+  sunDisc.position.set(-45,18,-65);
+  scene.add(sunDisc);
+
+  const geo = new THREE.PlaneGeometry(180,180,50,50);
+  const p = geo.attributes.position;
+  for(let i=0;i<p.count;i++){
+    const x=p.getX(i),y=p.getY(i);
+    p.setZ(i, Math.sin(x*0.12)*Math.cos(y*0.12)*0.5+(Math.random()-0.5)*0.25);
+  }
+  geo.computeVertexNormals();
+  groundMesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+    color:t.ground, roughness:1, flatShading:true}));
+  groundMesh.rotation.x = -Math.PI/2;
+  groundMesh.receiveShadow = true;
+  scene.add(groundMesh);
+
+  // صخره‌ها
+  for(let i=0;i<25;i++){
+    let x,z,ok=false,tr=0;
+    while(!ok && tr<30){
+      x=(Math.random()-0.5)*130; z=(Math.random()-0.5)*130; tr++;
+      ok = (Math.hypot(x,z)>9 && Math.hypot(x-(-10),z-(-6))>7 &&
+            Math.hypot(x-24,z-24)>9);
+    }
+    const s = 0.7+Math.random()*1.6;
+    const m = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(s,0),
+      new THREE.MeshStandardMaterial({color:t.ground,roughness:1,flatShading:true})
+    );
+    m.position.set(x,s*0.5,z);
+    m.rotation.set(Math.random(),Math.random(),Math.random());
+    m.castShadow = m.receiveShadow = true;
+    m.userData.rock = true;
+    scene.add(m);
+  }
+}
+
+/* ================================================================
+   شخصیت آرش
+   ================================================================ */
+const player = new THREE.Group();
+const arashBody = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.35,0.85,6,12),
+  new THREE.MeshStandardMaterial({color:0xb03a2e,roughness:.8})
+);
+arashBody.position.y = 0.9; arashBody.castShadow = true; player.add(arashBody);
+const arashHead = new THREE.Mesh(
+  new THREE.SphereGeometry(0.32,16,16),
+  new THREE.MeshStandardMaterial({color:0xe8b48a})
+);
+arashHead.position.y = 1.6; arashHead.castShadow = true; player.add(arashHead);
+const scarf = new THREE.Mesh(
+  new THREE.TorusGeometry(0.32,0.09,8,18),
+  new THREE.MeshStandardMaterial({color:0x2a6fa5})
+);
+scarf.rotation.x = Math.PI/2; scarf.position.y = 1.35; player.add(scarf);
+const arashNose = new THREE.Mesh(
+  new THREE.ConeGeometry(0.14,0.28,8),
+  new THREE.MeshStandardMaterial({color:0xf0c080})
+);
+arashNose.rotation.x = Math.PI/2; arashNose.position.set(0,1.6,0.3); player.add(arashNose);
+scene.add(player);
+
+/* ================================================================
+   رودابه (از لول ۸ ظاهر می‌شود)
+   ================================================================ */
+const rudabeh = new THREE.Group();
+const rudBody = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.32,0.75,6,12),
+  new THREE.MeshStandardMaterial({color:0xe066b0,roughness:.8})
+);
+rudBody.position.y = 0.85; rudBody.castShadow = true; rudabeh.add(rudBody);
+const rudHead = new THREE.Mesh(
+  new THREE.SphereGeometry(0.3,16,16),
+  new THREE.MeshStandardMaterial({color:0xf0c8a0})
+);
+rudHead.position.y = 1.5; rudHead.castShadow = true; rudabeh.add(rudHead);
+const rudVeil = new THREE.Mesh(
+  new THREE.ConeGeometry(0.35,0.55,8,1,true),
+  new THREE.MeshStandardMaterial({color:0xa02080,side:THREE.DoubleSide})
+);
+rudVeil.position.y = 1.55; rudabeh.add(rudVeil);
+rudabeh.visible = false;
+scene.add(rudabeh);
+
+/* ================================================================
+   کاروان
+   ================================================================ */
+const caravan = new THREE.Group();
+scene.add(caravan);
+
+function makePerson(color){
+  const g = new THREE.Group();
+  const b = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.3,0.7,6,10),
+    new THREE.MeshStandardMaterial({color,roughness:.9})
+  );
+  b.position.y = 0.8; b.castShadow = true; g.add(b);
+  const h = new THREE.Mesh(
+    new THREE.SphereGeometry(0.26,12,12),
+    new THREE.MeshStandardMaterial({color:0xd8a878})
+  );
+  h.position.y = 1.45; h.castShadow = true; g.add(h);
+  return g;
+}
+function makeCamel(){
+  const g = new THREE.Group();
+  const b = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.35,0.9,6,10),
+    new THREE.MeshStandardMaterial({color:0xc79a5e,roughness:1})
+  );
+  b.rotation.z = Math.PI/2; b.position.y = 0.85; b.castShadow = true; g.add(b);
+  const hump = new THREE.Mesh(
+    new THREE.SphereGeometry(0.3,12,12),
+    new THREE.MeshStandardMaterial({color:0xb98a4e})
+  );
+  hump.position.y = 1.2; hump.castShadow = true; g.add(hump);
+  const neck = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12,0.12,0.75,8),
+    new THREE.MeshStandardMaterial({color:0xc79a5e})
+  );
+  neck.position.set(0.55,1.2,0); neck.rotation.z = -0.5; neck.castShadow = true; g.add(neck);
+  return g;
+}
+
+function buildCaravan(count){
+  while(caravan.children.length){
+    const c = caravan.children[0];
+    caravan.remove(c);
+  }
+  const colors = [0x3a6ea5,0x7a4a9a,0x2e7d32,0xc0392b,0x2980b9,0x8e44ad];
+  for(let i=0;i<count;i++){
+    const p = makePerson(colors[i%colors.length]);
+    const angle = (i/count)*Math.PI*2;
+    p.position.set(Math.cos(angle)*1.8, 0, Math.sin(angle)*1.8);
+    caravan.add(p);
+  }
+  const cam = makeCamel();
+  cam.position.set(0,0,2.2);
+  caravan.add(cam);
+}
+
+/* ================================================================
+   راهزن‌ها
+   ================================================================ */
+const banditGroup = new THREE.Group();
+scene.add(banditGroup);
+
+function makeBanditVisual(type){
+  const g = new THREE.Group();
+  if(type==='hole'){
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(1.0,1.25,0.4,12),
+      new THREE.MeshStandardMaterial({color:0xa87848,roughness:1,flatShading:true}));
+    m.position.y = 0.18; g.add(m);
+    const c = new THREE.Mesh(new THREE.PlaneGeometry(0.55,0.45),
+      new THREE.MeshBasicMaterial({color:0xd32f2f,side:THREE.DoubleSide,transparent:true,opacity:0.8}));
+    c.rotation.x = -Math.PI/2; c.position.y = 0.42;
+    c.name='marker'; g.add(c);
+  } else if(type==='underground'){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.9,8,8),
+      new THREE.MeshStandardMaterial({color:0xa87848,roughness:1,flatShading:true}));
+    m.position.y = 0.1; m.scale.y = 0.3; g.add(m);
+    const c = new THREE.Mesh(new THREE.PlaneGeometry(0.5,0.3),
+      new THREE.MeshBasicMaterial({color:0x2e7d32,side:THREE.DoubleSide,transparent:true,opacity:0.85}));
+    c.rotation.x = -Math.PI/2; c.position.y = 0.32; c.name='marker'; g.add(c);
+  } else if(type==='behindRock'){
+    const r = new THREE.Mesh(new THREE.DodecahedronGeometry(1.1,0),
+      new THREE.MeshStandardMaterial({color:0xc28b58,roughness:1,flatShading:true}));
+    r.position.y = 0.6; r.castShadow = true; g.add(r);
+    const c = new THREE.Mesh(new THREE.ConeGeometry(0.15,0.3,6),
+      new THREE.MeshBasicMaterial({color:0x2c1810}));
+    c.position.set(0.9,1.4,0); c.name='marker'; g.add(c);
+  } else if(type==='reed'){
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.6,6),
+      new THREE.MeshStandardMaterial({color:0x8a9a5a}));
+    m.position.y = 0.8; g.add(m);
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.1,6,6),
+      new THREE.MeshBasicMaterial({color:0xff5252}));
+    c.position.y = 1.6; c.name='marker'; g.add(c);
+  } else if(type==='waterskin'){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.6,10,10),
+      new THREE.MeshStandardMaterial({color:0x6a4020,roughness:.9}));
+    m.position.y = 0.6; m.scale.y = 1.4; g.add(m);
+    const c = new THREE.Mesh(new THREE.TorusGeometry(0.2,0.06,6,10),
+      new THREE.MeshBasicMaterial({color:0xd32f2f}));
+    c.rotation.x = Math.PI/2; c.position.y = 1.3; c.name='marker'; g.add(c);
+  } else if(type==='palm'){
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.22,3,8),
+      new THREE.MeshStandardMaterial({color:0x8a6a40}));
+    m.position.y = 1.5; m.castShadow = true; g.add(m);
+    for(let i=0;i<5;i++){
+      const l = new THREE.Mesh(new THREE.ConeGeometry(0.35,1.2,4),
+        new THREE.MeshStandardMaterial({color:0x3a7030,side:THREE.DoubleSide}));
+      const a = (i/5)*Math.PI*2;
+      l.position.set(Math.cos(a)*0.5,3,Math.sin(a)*0.5);
+      l.rotation.z = Math.cos(a)*0.6; l.rotation.x = Math.sin(a)*0.6;
+      g.add(l);
+    }
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.12,6,6),
+      new THREE.MeshBasicMaterial({color:0xff5252}));
+    c.position.set(0,2.7,0); c.name='marker'; g.add(c);
+  } else if(type==='eyes'){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.9,8,8),
+      new THREE.MeshStandardMaterial({color:0xa87848,flatShading:true}));
+    m.position.y = 0.05; m.scale.y = 0.25; g.add(m);
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.12,6,6),
+      new THREE.MeshBasicMaterial({color:0xffeb3b}));
+    c.position.set(0.2,0.25,0); c.name='marker'; g.add(c);
+    const c2 = c.clone(); c2.position.x = -0.2; g.add(c2);
+  } else if(type==='camo'){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.8,8,8),
+      new THREE.MeshStandardMaterial({color:0xe4b478,flatShading:true}));
+    m.position.y = 0.15; m.scale.y = 0.4; g.add(m);
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.06,4,4),
+      new THREE.MeshBasicMaterial({color:0xff5252}));
+    c.position.y = 0.5; c.name='marker'; g.add(c);
+  } else if(type==='mirage'){
+    const m = new THREE.Mesh(new THREE.CircleGeometry(1.5,16),
+      new THREE.MeshBasicMaterial({color:0x80d0ff,transparent:true,opacity:0.5}));
+    m.rotation.x = -Math.PI/2; m.position.y = 0.05; g.add(m);
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.12,6,6),
+      new THREE.MeshBasicMaterial({color:0xff5252}));
+    c.position.y = 0.5; c.name='marker'; g.add(c);
+  } else if(type==='cave'){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(1.5,12,12,0,Math.PI*2,0,Math.PI/2),
+      new THREE.MeshStandardMaterial({color:0x2a1a10,side:THREE.BackSide}));
+    m.position.y = 0; g.add(m);
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.12,6,6),
+      new THREE.MeshBasicMaterial({color:0xff5252}));
+    c.position.set(0,0.8,1.4); c.name='marker'; g.add(c);
+  } else if(type==='night'){
+    const m = new THREE.Mesh(new THREE.CapsuleGeometry(0.3,0.7,6,8),
+      new THREE.MeshStandardMaterial({color:0x0a0a18,roughness:1}));
+    m.position.y = 0.8; g.add(m);
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.1,6,6),
+      new THREE.MeshBasicMaterial({color:0xff5252}));
+    c.position.y = 1.5; c.name='marker'; g.add(c);
+  } else if(type==='multi'){
+    const m1 = new THREE.Mesh(new THREE.CylinderGeometry(0.9,1.1,0.4,12),
+      new THREE.MeshStandardMaterial({color:0xa87848,flatShading:true}));
+    m1.position.set(-0.8,0.18,0); g.add(m1);
+    const m2 = new THREE.Mesh(new THREE.SphereGeometry(0.7,8,8),
+      new THREE.MeshStandardMaterial({color:0xa87848,flatShading:true}));
+    m2.position.set(1.2,0.15,0); m2.scale.y = 0.3; g.add(m2);
+    const c1 = new THREE.Mesh(new THREE.PlaneGeometry(0.4,0.3),
+      new THREE.MeshBasicMaterial({color:0xd32f2f,side:THREE.DoubleSide,transparent:true,opacity:0.85}));
+    c1.rotation.x = -Math.PI/2; c1.position.set(-0.8,0.42,0); c1.name='marker'; g.add(c1);
+    const c2 = c1.clone(); c2.material = c1.material.clone();
+    c2.material.color.setHex(0x2e7d32); c2.position.set(1.2,0.32,0); g.add(c2);
+  } else if(type==='boss'){
+    const m = new THREE.Mesh(new THREE.CapsuleGeometry(0.5,1.2,8,12),
+      new THREE.MeshStandardMaterial({color:0x1a0a20,roughness:.8}));
+    m.position.y = 1.1; m.castShadow = true; g.add(m);
+    const h = new THREE.Mesh(new THREE.SphereGeometry(0.4,12,12),
+      new THREE.MeshStandardMaterial({color:0x8a6050}));
+    h.position.y = 2.1; g.add(h);
+    const horn1 = new THREE.Mesh(new THREE.ConeGeometry(0.15,0.5,6),
+      new THREE.MeshStandardMaterial({color:0x401030}));
+    horn1.position.set(-0.2,2.5,0); g.add(horn1);
+    const horn2 = horn1.clone(); horn2.position.x = 0.2; g.add(horn2);
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.18,8,8),
+      new THREE.MeshBasicMaterial({color:0xff0000}));
+    c.position.set(0,2.1,0.4); c.name='marker'; g.add(c);
+  }
+  return g;
+}
+
+/* ================================================================
+   چاه، دروازه، کاروانسرا
+   ================================================================ */
+const WELL_POS = new THREE.Vector3(-10,0,-6);
+const GATE_POS = new THREE.Vector3(24,0,24);
+
+const wellGroup = new THREE.Group();
+wellGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.4,0.65,16),
+  new THREE.MeshStandardMaterial({color:0x8a6a4a,roughness:1})).translateY(0.32));
+const wellWater = new THREE.Mesh(new THREE.CircleGeometry(0.95,16),
+  new THREE.MeshBasicMaterial({color:0x4fc3f7}));
+wellWater.rotation.x = -Math.PI/2; wellWater.position.y = 0.68; wellGroup.add(wellWater);
+const wellMarker = new THREE.Mesh(new THREE.ConeGeometry(0.3,0.9,8),
+  new THREE.MeshBasicMaterial({color:0x29b6f6}));
+wellMarker.position.y = 2.6; wellGroup.add(wellMarker);
+wellGroup.position.copy(WELL_POS);
+scene.add(wellGroup);
+
+const gateGroup = new THREE.Group();
+const wallMat = new THREE.MeshStandardMaterial({color:0xd4a06a,roughness:1});
+const lw = new THREE.Mesh(new THREE.BoxGeometry(1.6,5.5,1.6),wallMat);
+lw.position.set(-3.2,2.75,0); lw.castShadow = true;
+const rw = new THREE.Mesh(new THREE.BoxGeometry(1.6,5.5,1.6),wallMat);
+rw.position.set(3.2,2.75,0); rw.castShadow = true;
+const tb = new THREE.Mesh(new THREE.BoxGeometry(8,1.3,1.9),wallMat);
+tb.position.set(0,6,0); tb.castShadow = true;
+const banner = new THREE.Mesh(new THREE.PlaneGeometry(4.5,1.6),
+  new THREE.MeshBasicMaterial({color:0x29b6f6,side:THREE.DoubleSide}));
+banner.position.set(0,4.5,0.4);
+gateGroup.add(lw,rw,tb,banner);
+gateGroup.position.copy(GATE_POS);
+gateGroup.rotation.y = -Math.PI/4;
+scene.add(gateGroup);
+
+/* ================================================================
+   ورودی
+   ================================================================ */
+const stickEl = document.getElementById('stick');
+const knobEl = document.getElementById('knob');
+const input = {x:0,y:0};
+let stickActive=false,cx=0,cy=0;
+const R = 37.5;
+
+stickEl.addEventListener('pointerdown', e=>{
+  stickActive=true; stickEl.setPointerCapture(e.pointerId);
+  const r = stickEl.getBoundingClientRect();
+  cx = r.left+r.width/2; cy = r.top+r.height/2;
+  handleStick(e);
+});
+stickEl.addEventListener('pointermove', e=>{if(stickActive)handleStick(e)});
+const relStick = ()=>{stickActive=false;input.x=0;input.y=0;knobEl.style.transform='translate(0,0)'};
+stickEl.addEventListener('pointerup',relStick);
+stickEl.addEventListener('pointercancel',relStick);
+function handleStick(e){
+  let dx=e.clientX-cx,dy=e.clientY-cy;
+  const len=Math.hypot(dx,dy);
+  if(len>R){dx=dx/len*R;dy=dy/len*R}
+  knobEl.style.transform=`translate(${dx}px,${dy}px)`;
+  input.x=dx/R; input.y=dy/R;
+}
+
+let camYaw=0.5,camPitch=0.55;
+let dragActive=false,lastX=0,lastY=0;
+renderer.domElement.addEventListener('pointerdown',e=>{
+  dragActive=true;lastX=e.clientX;lastY=e.clientY;
+});
+addEventListener('pointermove',e=>{
+  if(!dragActive)return;
+  camYaw -= (e.clientX-lastX)*0.006;
+  camPitch = Math.max(0.15,Math.min(1.2,camPitch+(e.clientY-lastY)*0.004));
+  lastX=e.clientX;lastY=e.clientY;
+});
+addEventListener('pointerup',()=>dragActive=false);
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+renderer.domElement.addEventListener('pointerup', e=>{
+  if(!state.playing||state.won||state.lost)return;
+  if(Math.abs(e.clientX-lastX)>6||Math.abs(e.clientY-lastY)>6)return;
+  pointer.x=(e.clientX/innerWidth)*2-1;
+  pointer.y=-(e.clientY/innerHeight)*2+1;
+  raycaster.setFromCamera(pointer,camera);
+  const hits = raycaster.intersectObjects(banditGroup.children,true);
+  for(const h of hits){
+    let p = h.object;
+    while(p.parent && p.parent !== banditGroup) p = p.parent;
+    if(p.userData.banditIdx !== undefined){
+      const idx = p.userData.banditIdx;
+      if(!state.banditFound.has(idx)){
+        const d = player.position.distanceTo(p.position);
+        if(d < 14) foundBandit(idx);
+      }
+    }
+  }
+});
+
+/* ================================================================
+   دیالوگ
+   ================================================================ */
+const dialogEl = document.getElementById('dialog');
+const speakerEl = document.getElementById('speaker');
+const dialogTextEl = document.getElementById('dialogText');
+const loveEl = document.getElementById('love');
+let dialogTimer=null;
+
+function showDialog(s,t,ms=4200){
+  speakerEl.textContent = s+':';
+  dialogTextEl.textContent = t;
+  dialogEl.classList.add('show');
+  clearTimeout(dialogTimer);
+  dialogTimer = setTimeout(()=>dialogEl.classList.remove('show'),ms);
+}
+function showFloat(t,ms=2200){showDialog('',t,ms)}
+
+function showLove(){
+  loveEl.classList.add('show');
+  setTimeout(()=>loveEl.classList.remove('show'),1400);
+}
+
+/* ================================================================
+   کشف راهزن
+   ================================================================ */
+function foundBandit(idx){
+  state.banditFound.add(idx);
+  const b = banditGroup.children[idx];
+  if(!b) return;
+  document.getElementById('alert').classList.remove('show');
+  document.getElementById('tapHint').classList.remove('show');
+  document.getElementById('warnBar').style.display = 'none';
+  const start = performance.now();
+  (function anim(){
+    const p = (performance.now()-start)/800;
+    if(p>=1){b.visible=false;return}
+    b.scale.setScalar(1-p*0.5);
+    b.position.y = b.userData.baseY + p*4;
+    b.rotation.y += 0.25;
+    requestAnimationFrame(anim);
+  })();
+  showFloat('🎯 ' + b.userData.name + ' پیدا شد و فرار کرد!', 2500);
+}
+
+function banditAttacks(idx){
+  state.banditFound.add(idx);
+  state.banditHit = true;
+  state.water = Math.max(5, state.water-25);
+  state.food = Math.max(5, state.food-15);
+  const b = banditGroup.children[idx];
+  if(b) b.visible = false;
+  document.getElementById('alert').classList.remove('show');
+  document.getElementById('tapHint').classList.remove('show');
+  document.getElementById('warnBar').style.display = 'none';
+  showFloat('⚠️ راهزن حمله کرد! آب و غذا کم شد', 3000);
+}
+
+/* ================================================================
+   HUD
+   ================================================================ */
+const waterBarEl=document.getElementById('waterBar');
+const foodBarEl=document.getElementById('foodBar');
+const warnBarEl=document.getElementById('warnBar');
+const coinValEl=document.getElementById('coinVal');
+const alertEl=document.getElementById('alert');
+const tapHintEl=document.getElementById('tapHint');
+const clockEl=document.getElementById('clock');
+const phaseNameEl=document.getElementById('phaseName');
+
+const PHASES = [
+  {n:'صبح',i:'🌅'},{n:'ظهر',i:'☀️'},{n:'عصر',i:'🌇'},
+  {n:'غروب',i:'🌆'},{n:'شب',i:'🌙'},{n:'نیمه‌شب',i:'🌑'},{n:'سحر',i:'✨'}
+];
+
+function toFa(n){return String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d])}
+
+function updateHUD(){
+  const wp = state.water/state.waterMax;
+  waterBarEl.querySelector('.fill').style.width = (wp*100)+'%';
+  waterBarEl.classList.toggle('warn', wp<0.5&&wp>=0.25);
+  waterBarEl.classList.toggle('danger', wp<0.25);
+
+  const fp = state.food/100;
+  foodBarEl.querySelector('.fill').style.width = (fp*100)+'%';
+  foodBarEl.classList.toggle('warn', fp<0.5&&fp>=0.25);
+  foodBarEl.classList.toggle('danger', fp<0.25);
+
+  coinValEl.textContent = toFa(save.coins);
+
+  // نوار هشدار نزدیک‌ترین راهزن
+  if(state.playing && !state.won && !state.lost){
+    let nearest = null, nearestD = 14;
+    banditGroup.children.forEach((b,idx)=>{
+      if(state.banditFound.has(idx) || !b.visible) return;
+      const d = player.position.distanceTo(b.position);
+      if(d < nearestD){nearestD = d; nearest = idx;}
+    });
+    if(nearest !== null){
+      warnBarEl.style.display = 'flex';
+      const t = state.banditTimers.get(nearest) || 0;
+      warnBarEl.querySelector('.fill').style.width = Math.min(100,(t/8)*100)+'%';
+      tapHintEl.classList.add('show');
+      if(t > 3) alertEl.classList.add('show');
+      else alertEl.classList.remove('show');
+    } else {
+      warnBarEl.style.display = 'none';
+      tapHintEl.classList.remove('show');
+      alertEl.classList.remove('show');
+    }
+  } else {
+    warnBarEl.style.display = 'none';
+    tapHintEl.classList.remove('show');
+    alertEl.classList.remove('show');
+  }
+
+  const totalH = 6 + state.elapsed;
+  const h = Math.floor(totalH)%24;
+  const m = Math.floor((totalH%1)*60);
+  clockEl.textContent = toFa(h)+':'+toFa(String(m).padStart(2,'0'));
+  const pIdx = Math.min(PHASES.length-1, Math.floor(state.elapsed/3));
+  phaseNameEl.textContent = PHASES[pIdx].i+' '+PHASES[pIdx].n;
+}
+
+/* ================================================================
+   حلقه‌ی بازی
+   ================================================================ */
+const clock = new THREE.Clock();
+const forward = new THREE.Vector3();
+const right = new THREE.Vector3();
+const moveDir = new THREE.Vector3();
+const camTarget = new THREE.Vector3();
+const camDesired = new THREE.Vector3();
+
+function lerpAngle(a,b,t){
+  let d = (b-a)%(Math.PI*2);
+  if(d>Math.PI)d-=Math.PI*2;
+  if(d<-Math.PI)d+=Math.PI*2;
+  return a+d*t;
+}
+
+function updatePlayer(dt){
+  forward.set(-Math.sin(camYaw),0,-Math.cos(camYaw));
+  right.set(Math.cos(camYaw),0,-Math.sin(camYaw));
+  moveDir.set(0,0,0).addScaledVector(forward,-input.y).addScaledVector(right,input.x);
+  if(moveDir.lengthSq()>0.001){
+    moveDir.normalize();
+    const target = Math.atan2(moveDir.x,moveDir.z);
+    player.rotation.y = lerpAngle(player.rotation.y,target,1-Math.pow(0.0001,dt));
+    player.position.addScaledVector(moveDir,6.5*dt);
+    player.position.x = THREE.MathUtils.clamp(player.position.x,-80,80);
+    player.position.z = THREE.MathUtils.clamp(player.position.z,-80,80);
+  }
+}
+
+function updateCaravan(dt){
+  const target = new THREE.Vector3(
+    player.position.x - Math.sin(player.rotation.y)*3.5,
+    0,
+    player.position.z - Math.cos(player.rotation.y)*3.5
+  );
+  const d = caravan.position.distanceTo(target);
+  if(d>0.3){
+    const dir = target.clone().sub(caravan.position).normalize();
+    caravan.position.addScaledVector(dir,Math.min(5.2*dt,d));
+    caravan.rotation.y = lerpAngle(caravan.rotation.y,Math.atan2(dir.x,dir.z),1-Math.pow(0.001,dt));
+  }
+}
+
+function updateRudabeh(dt){
+  if(!rudabeh.visible) return;
+  // رودابه کنار کاروان
+  const target = new THREE.Vector3(
+    caravan.position.x + Math.cos(player.rotation.y)*2,
+    0,
+    caravan.position.z - Math.sin(player.rotation.y)*2
+  );
+  const d = rudabeh.position.distanceTo(target);
+  if(d>0.5){
+    const dir = target.clone().sub(rudabeh.position).normalize();
+    rudabeh.position.addScaledVector(dir,Math.min(5*dt,d));
+    rudabeh.rotation.y = lerpAngle(rudabeh.rotation.y,Math.atan2(dir.x,dir.z),1-Math.pow(0.001,dt));
+  }
+}
+
+function updateCamera(dt){
+  const dist = 9.5;
+  const h = Math.sin(camPitch)*dist;
+  const r = Math.cos(camPitch)*dist;
+  camTarget.set(player.position.x,player.position.y+1.3,player.position.z);
+  camDesired.set(
+    player.position.x+Math.sin(camYaw)*r,
+    player.position.y+1.3+h,
+    player.position.z+Math.cos(camYaw)*r
+  );
+  camera.position.lerp(camDesired,1-Math.pow(0.0004,dt));
+  camera.lookAt(camTarget);
+}
+
+function updateTimeResources(dt){
+  if(!state.playing||state.won||state.lost)return;
+
+  // زمان: هر ثانیه واقعی = ~۶ دقیقه شبیه‌سازی (۸ ساعت در ۸۰ ثانیه)
+  state.elapsed += dt*0.1*6/6; // ~۰.۱ ساعت در ثانیه → ۱۰ ساعت در ۱۰۰ ثانیه
+  state.elapsed += dt*0.05; // ملایم‌تر
+
+  // مصرف
+  state.water -= dt*1.2;
+  state.food  -= dt*0.7;
+
+  if(state.water<=0){state.water=0;return loseGame('💧 آب کاروان تمام شد و در صحرا ماندید.')}
+  if(state.food<=0){state.food=0;return loseGame('🍞 غذای کاروان تمام شد و کاروانیان ناتوان شدند.')}
+
+  // چاه
+  if(!state.wellUsed && player.position.distanceTo(WELL_POS)<5){
+    state.water = state.waterMax;
+    state.wellUsed = true;
+    wellMarker.visible = false;
+    showFloat('💧 آب کاروان پر شد!',2500);
+  }
+
+  // دیالوگ‌های زمان‌بندی
+  const lv = state.lv;
+  lv.dial.forEach((d,i)=>{
+    if(i>=state.dialogIdx && state.elapsed>=d.at){
+      showDialog(d.s,d.t,4500);
+      state.dialogIdx = i+1;
+      if(lv.romance && (d.s==='رودابه'||d.s==='آرش') && Math.random()<0.6){
+        setTimeout(showLove,1500);
+      }
+    }
+  });
+
+  // راهزن‌ها
+  updateBandits(dt);
+
+  // برد
+  if(caravan.position.distanceTo(GATE_POS)<5 && !state.won) winLevel();
+
+  // پایان زمان
+  if(state.elapsed > lv.hours + 4){
+    loseGame('🌙 شب شد و کاروان به مقصد نرسید. راهزن‌ها کاروان را غارت کردند.');
+  }
+}
+
+function updateBandits(dt){
+  if(!state.playing) return;
+  banditGroup.children.forEach((b,idx)=>{
+    if(state.banditFound.has(idx) || !b.visible) return;
+    const d = player.position.distanceTo(b.position);
+    if(d<14){
+      const t = (state.banditTimers.get(idx)||0) + dt;
+      state.banditTimers.set(idx,t);
+      const marker = b.getObjectByName('marker');
+      if(marker && marker.material){
+        if(marker.material.opacity !== undefined){
+          marker.material.opacity = 0.5+Math.sin(performance.now()*0.02)*0.4;
+        }
+      }
+      if(t>=8) banditAttacks(idx);
+    } else {
+      const t = Math.max(0,(state.banditTimers.get(idx)||0)-dt*0.5);
+      state.banditTimers.set(idx,t);
+    }
+  });
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(),0.05);
+  if(state.playing){
+    updatePlayer(dt);
+    updateCaravan(dt);
+    updateRudabeh(dt);
+    updateTimeResources(dt);
+    updateHUD();
+  }
+  updateCamera(dt);
+  renderer.render(scene,camera);
+}
+animate();
+
+addEventListener('resize',()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+/* ================================================================
+   مدیریت صفحه‌ها
+   ================================================================ */
+const S = {
+  start:document.getElementById('startScreen'),
+  briefing:document.getElementById('briefing'),
+  win:document.getElementById('winScreen'),
+  shop:document.getElementById('shop'),
+  lose:document.getElementById('loseScreen'),
+  final:document.getElementById('finalScreen')
+};
+function showScreen(n){Object.values(S).forEach(s=>s.classList.add('hide'));if(n)S[n].classList.remove('hide')}
+function hideAll(){Object.values(S).forEach(s=>s.classList.add('hide'))}
+
+/* ================================================================
+   شروع
+   ================================================================ */
+document.getElementById('startBtn').addEventListener('click',()=>{
+  save.coins = 0; save.level = 1; save.owned = []; save.bestLevel = 1;
+  saveGame();
+  showBriefing(LEVELS[0]);
+});
+
+if(save.coins>0 || save.bestLevel>1){
+  const cb = document.getElementById('continueBtn');
+  const rb = document.getElementById('resetBtn');
+  cb.style.display = 'inline-block';
+  rb.style.display = 'inline-block';
+  cb.addEventListener('click',()=>{
+    const lv = LEVELS.find(l=>l.id === save.level) || LEVELS[0];
+    showBriefing(lv);
+  });
+  rb.addEventListener('click',()=>{
+    if(confirm('پیشرفت پاک شود؟')){
+      save={coins:0,level:1,owned:[],bestLevel:1};
+      saveGame();
+      showBriefing(LEVELS[0]);
+    }
+  });
+}
+
+/* ================================================================
+   بریفینگ
+   ================================================================ */
+function showBriefing(level){
+  state.lv = level;
+  document.getElementById('briefTitle').textContent = 'لول '+toFa(level.id)+' — '+level.from;
+  document.getElementById('bFrom').textContent = level.from;
+  document.getElementById('bTo').textContent = level.to;
+  document.getElementById('bDist').textContent = toFa(level.dist)+' کیلومتر';
+  document.getElementById('bTime').textContent = toFa(level.hours)+' ساعت';
+  document.getElementById('bCara').textContent = level.caravan;
+  document.getElementById('bLeader').textContent = level.leader;
+  document.getElementById('bCargo').textContent = level.cargo;
+  document.getElementById('bPay').textContent = toFa(level.pay)+' سکه';
+  document.getElementById('bRisk').textContent = level.risk;
+
+  const phaseList = [
+    '🌅 صبح (۶-۹): خروج و پیدا کردن مسیر',
+    '☀️ ظهر (۹-۱۲): پیدا کردن چاه آب',
+    '🌇 عصر (۱۲-۱۵): رسیدن به مقصد',
+    '🌆 غروب (۱۵-۱۸): کمپ و آماده‌سازی',
+    '🌙 شب (۱۸-۲۱): نگهبانی از کاروان',
+    '🌑 نیمه‌شب (۲۱-۲۴): ترسناک‌ترین لحظه',
+    '✨ سحر (۳-۶): امید دوباره'
+  ];
+  const missionsEl = document.getElementById('bMissions');
+  missionsEl.innerHTML = '<div style="color:#ffcb6b;font-size:12px;margin-bottom:5px">📋 ماموریت‌ها:</div>';
+  const phaseCount = Math.min(7, Math.ceil(level.hours/3));
+  for(let i=0;i<phaseCount;i++){
+    missionsEl.innerHTML += `<div class="m">${phaseList[i]}</div>`;
+  }
+
+  showScreen('briefing');
+}
+
+document.getElementById('startLevelBtn').addEventListener('click',()=>{
+  hideAll();
+  startLevel();
+});
+
+/* ================================================================
+   شروع لول
+   ================================================================ */
+function startLevel(){
+  const lv = state.lv;
+  buildWorld(lv.theme);
+
+  // کاروان: تعداد نفرات از size
+  const count = Math.min(8, Math.max(3, parseInt(lv.size) || 3));
+  buildCaravan(count);
+
+  // راهزن‌ها
+  while(banditGroup.children.length) banditGroup.remove(banditGroup.children[0]);
+  state.banditFound.clear();
+  state.banditTimers.clear();
+  lv.bandits.forEach((bd,i)=>{
+    const g = makeBanditVisual(bd.type);
+    g.position.set(bd.x,0,bd.z);
+    g.userData = {banditIdx:i, name:bd.name, baseY:0};
+    banditGroup.add(g);
+  });
+
+  // رودابه
+  rudabeh.visible = !!lv.romance;
+  if(rudabeh.visible){
+    rudabeh.position.set(-5,0,3);
+  }
+
+  // ریست وضعیت
+  state.playing = true;
+  state.waterMax = save.owned.includes('water') ? 130 : 100;
+  state.water = state.waterMax;
+  state.food = 100;
+  state.elapsed = 0;
+  state.banditHit = false;
+  state.wellUsed = false;
+  state.won = false;
+  state.lost = false;
+  state.dialogIdx = 0;
+  state.loveShown = false;
+
+  // موقعیت‌ها
+  player.position.set(0,0,0);
+  player.rotation.y = 0;
+  caravan.position.set(-3,0,3);
+  caravan.rotation.y = 0;
+  wellGroup.visible = true;
+  wellMarker.visible = true;
+  camYaw = 0.5; camPitch = 0.55;
+
+  updateHUD();
+
+  // دیالوگ اول
+  if(lv.dial[0]){
+    setTimeout(()=>{
+      showDialog(lv.dial[0].s,lv.dial[0].t,4500);
+      state.dialogIdx = 1;
+    },600);
+  }
+}
+
+/* ================================================================
+   برد و باخت
+   ================================================================ */
+function winLevel(){
+  state.won = true;
+  state.playing = false;
+  const lv = state.lv;
+  const base = lv.pay;
+  const healthyBonus = state.banditHit ? 0 : Math.round(base*0.3);
+  const perfectBonus = (!state.banditHit && !state.wellUsed) ? Math.round(base*0.5) : 0;
+  const timeBonus = state.elapsed < lv.hours-1 ? Math.round(base*0.2) : 0;
+  const total = base + healthyBonus + perfectBonus + timeBonus;
+
+  save.coins += total;
+  if(lv.id >= save.level) save.level = Math.min(20, lv.id+1);
+  if(lv.id > save.bestLevel) save.bestLevel = lv.id;
+  saveGame();
+
+  const rl = document.getElementById('rewardList');
+  rl.innerHTML = `
+    <div class="r"><span class="k">دستمزد پایه</span><span class="v">+${toFa(base)}</span></div>
+    ${healthyBonus?`<div class="r"><span class="k">کاروان سالم</span><span class="v">+${toFa(healthyBonus)}</span></div>`:''}
+    ${perfectBonus?`<div class="r"><span class="k">سفر کامل</span><span class="v">+${toFa(perfectBonus)}</span></div>`:''}
+    ${timeBonus?`<div class="r"><span class="k">رسیدن زودتر</span><span class="v">+${toFa(timeBonus)}</span></div>`:''}
+    <div class="r" style="border-top:1px solid rgba(255,200,120,.3);padding-top:8px;margin-top:5px">
+      <span class="k" style="color:#ffcb6b">مجموع</span>
+      <span class="v" style="font-size:17px">+${toFa(total)} 🪙</span>
+    </div>
+  `;
+  document.getElementById('winSub').textContent = lv.to;
+
+  // اگر لول آخر بود، صفحه‌ی فینال
+  if(lv.final){
+    setTimeout(()=>showScreen('final'),1500);
+    return;
+  }
+
+  // دیالوگ پایان
+  if(lv.win) setTimeout(()=>showFloat('💬 '+lv.win.s+': '+lv.win.t,5000),800);
+
+  setTimeout(()=>showScreen('win'),1500);
+}
+
+function loseGame(msg){
+  state.lost = true;
+  state.playing = false;
+  const penalty = Math.min(save.coins, 15);
+  save.coins = Math.max(30, save.coins-penalty);
+  saveGame();
+  document.getElementById('loseMsg').textContent = msg;
+  setTimeout(()=>showScreen('lose'),700);
+}
+
+/* ================================================================
+   دکمه‌های پایان
+   ================================================================ */
+document.getElementById('retryBtn').addEventListener('click',()=>{
+  hideAll();
+  startLevel();
+});
+
+document.getElementById('nextLevelBtn').addEventListener('click',()=>{
+  const next = LEVELS.find(l=>l.id === state.lv.id+1);
+  if(next){
+    save.level = next.id;
+    saveGame();
+    hideAll();
+    showBriefing(next);
+  } else {
+    showScreen('final');
+  }
+});
+
+document.getElementById('toShopBtn').addEventListener('click', openShop);
+document.getElementById('closeShopBtn').addEventListener('click',()=>{
+  hideAll();
+  const next = LEVELS.find(l=>l.id === state.lv.id+1);
+  if(next) showBriefing(next);
+  else if(state.lv.final) showScreen('final');
+  else showBriefing(state.lv);
+});
+
+document.getElementById('finalRestart').addEventListener('click',()=>{
+  save = {coins:0,level:1,owned:[],bestLevel:1};
+  saveGame();
+  hideAll();
+  showScreen('start');
+});
+
+/* ================================================================
+   فروشگاه
+   ================================================================ */
+function openShop(){
+  const itemsEl = document.getElementById('shopItems');
+  document.getElementById('shopCoins').textContent = '🪙 '+toFa(save.coins)+' سکه';
+  itemsEl.innerHTML = '';
+  SHOP.forEach(item=>{
+    const owned = save.owned.includes(item.id);
+    const canBuy = !owned && save.coins>=item.price;
+    const el = document.createElement('div');
+    el.className = 'item'+(owned?' owned':'');
+    el.innerHTML = `
+      <div class="name">${item.name}</div>
+      <div class="desc">${item.desc}</div>
+      <div class="price">${owned?'✓ خریداری شده':'🪙 '+toFa(item.price)}</div>
+    `;
+    if(canBuy){
+      el.addEventListener('click',()=>{
+        save.coins -= item.price;
+        save.owned.push(item.id);
+        saveGame();
+        openShop();
+      });
+    }
+    itemsEl.appendChild(el);
+  });
+  showScreen('shop');
+}
+
+/* ================================================================
+   جلوگیری از زوم و اسکرول آیفون
+   ================================================================ */
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('touchmove',e=>{
+  if(e.touches.length>1) e.preventDefault();
+},{passive:false});
+
+console.log('🏜️ آرش لولی — ۲۰ لول آماده');
+</script>
+</body>
+</html>
